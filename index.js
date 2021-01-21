@@ -1,5 +1,6 @@
 const express = require('express');
 const {aql} = require('arangojs')
+require('dotenv').config()
 const db = require('./db/arangoConn');
 const {courseCrawler, siteCrawler} = require('./scripts/puppeteer');
 var bodyParser = require('body-parser');
@@ -26,9 +27,8 @@ const main = async ({db}) => {
     //     console.log(err)
     // }
 
-    const abc = await siteCrawler();
-    console.log(abc);
-    
+  const data = await siteCrawler();
+  
 }
 
 main({db});
