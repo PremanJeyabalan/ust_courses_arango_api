@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer')
 const {flatten} = require('lodash');
 require('dotenv').config()
+const db = require('../db/arangoConn');
 
 
 const courseCrawler = async ({page, code}) => {
@@ -9,23 +10,24 @@ const courseCrawler = async ({page, code}) => {
    
     pre_ex = await page.evaluate(() => {
         var abc = document.querySelectorAll('[class="attribute selectable"]')
-        let pre, ex = Array();
+        const pre = Array();
+        const ex = Array();
         abc.forEach((a)=>{
             if (a.innerText.includes('Prerequisites')){  
                 if(a.querySelectorAll('[class="course-link"]')){
-                    a.querySelectorAll('[class="course-link"]').forEach((b) => {console.log(b.innerText); pre.push(b.innerText)}, pre)
+                    a.querySelectorAll('[class="course-link"]').forEach((b) => {console.log(b.innerText); pre.push(b.innerText)})
                 }
             } else if (a.innerText.includes('Exclusions')){
                 if(a.querySelectorAll('[class="course-link"]')){
-                    a.querySelectorAll('[class="course-link"]').forEach((b) => ex.push(b.innerText), ex)
+                    a.querySelectorAll('[class="course-link"]').forEach((b) =>ex.push(b.innerText))
                 }
             }
             
-        })
+        },)
         return [pre, ex]
     })
     
-    return {code, Prerequisites: pre_ex[0], Exclusions: pre_ex[1]}
+    return {code, prereqs: pre_ex[0], exclusions: pre_ex[1]}
 
 }
 
@@ -50,7 +52,7 @@ const courseListCrawler = async ({page, depCode}) => {
 }
 
 const initPup = async () => {
-    const browser = await puppeteer.launch({headless: false})
+    const browser = await puppeteer.launch({headless: true})
     const page = await browser.newPage()
 
     
@@ -92,16 +94,39 @@ const getCourseList = async ({page, departmentList}) => {
 const siteCrawler = async () => {
     const {browser, page} = await initPup();
 
-    // const departmentList = await getDepartments({page});
+    console.log("Getting departments...")
+
+    const departmentList = await getDepartments({page});
+    console.log(departmentList)
+
+    console.log("Success!")
+
+    await departmentList.forEach(async (dept) => {
+        const col = db.collection(dept);
+        if(!col.exists()){
+            await col.create();
+        }
+        
+    })
+
+    console.log("Getting courses...")
     
-    // const fullCourses =  await getCourseList({page, departmentList});
+    const fullCourses =  await getCourseList({page, departmentList});
+    console.log(fullCourses);
+
+    console.log("Success!")
 
     let courseRelation = Array();
 
-    // for (code of fullCourses){
-        const course = await courseCrawler({page, code: 'MATH1012'})
+    console.log("Getting course details, this could take awhile...")
+
+    for (code of fullCourses){
+        const course = await courseCrawler({page, code})
+        console.log(course);
         courseRelation.push(course);
-    // }
+    }
+
+    console.log("Success! Closing script...")
 
 
 

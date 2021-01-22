@@ -1,8 +1,8 @@
 const express = require('express');
-const {aql} = require('arangojs')
 require('dotenv').config()
 const db = require('./db/arangoConn');
-const {courseCrawler, siteCrawler} = require('./scripts/puppeteer');
+const {siteCrawler} = require('./scripts/puppeteer');
+const { Puppeteer } = require('./controller/puppeteer.controller');
 var bodyParser = require('body-parser');
 const app = express()
 app.use(
@@ -28,6 +28,11 @@ const main = async ({db}) => {
     // }
 
   const data = await siteCrawler();
+  console.log("Inserting data into database...")
+
+  const cursor = await Puppeteer({db}).initDatabase(data)
+
+  console.log("Success!")
   
 }
 
