@@ -52,7 +52,7 @@ const courseListCrawler = async ({page, depCode}) => {
 }
 
 const initPup = async () => {
-    const browser = await puppeteer.launch({headless: true})
+    const browser = await puppeteer.launch({headless: false})
     const page = await browser.newPage()
 
     
@@ -98,16 +98,13 @@ const siteCrawler = async () => {
 
     const departmentList = await getDepartments({page});
     console.log(departmentList)
+    
+    departmentList.forEach(async (dept) => {
+        const cursor = await insertCourse({collection: 'departments', _key: dept});
+        console.log(cursor);
+    })
 
     console.log("Success!")
-
-    await departmentList.forEach(async (dept) => {
-        const col = db.collection(dept);
-        if(!col.exists()){
-            await col.create();
-        }
-        
-    })
 
     console.log("Getting courses...")
     

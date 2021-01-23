@@ -20,16 +20,29 @@ function Puppeteer({ db }) {
     }
 
     const initDatabase = async data => {
+        ['courses', 'departments'].forEach(async (string) => {
+            const col = db.collection(string);
+            if(! (await col.exists())){
+                await col.create();
+            }
+        })
+        
         for (course of data){
-            const collection = course.code.substr(0, 4);
-            const _key = course.code.substr(4).trim();
-            const doc = await insertCourse({collection, _key});
+            const doc = await insertCourse({collection: 'courses', _key: course.code});
             console.log(doc);
+
+            const group = await insertRelation({
+                _from: `courses/${course.code}`,
+                _to: `departments/${course.code.substr(0,4)}`,
+                edgeCollection: 'departmentOf'
+            })
+
+            console.log(group);
 
             if (Array.isArray(course.prereqs)){
                 for (pre of course.prereqs){
-                    const  _from = pre.substr(0, 4) + '/' + pre.substr(5).trim();  
-                    const _to = collection + '/' + _key;
+                    const  _from = 'courses/' + pre.substr(0, 4) + pre.substr(5);  
+                    const _to = 'courses/' + course.code;
                     const edge = await insertRelation({_from, _to, edgeCollection: 'prerequisiteOf'});
                     console.log(edge)
                 }
@@ -41,8 +54,8 @@ function Puppeteer({ db }) {
                     const lastElement = course.exclusions[index-1];
 
                     const edge = await insertRelation({
-                        _from: lastElement.substr(0,4) + '/' +  lastElement.substr(5).trim(),
-                        _to: element.substr(0,4) + '/' +  element.substr(5).trim(),
+                        _from: 'courses/' + lastElement.substr(0,4) + lastElement.substr(5),
+                        _to: 'courses/' + element.substr(0,4) + element.substr(5),
                         edgeCollection: 'exclusionOf'
                     })
 
