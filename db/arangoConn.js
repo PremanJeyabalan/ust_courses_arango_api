@@ -1,4 +1,4 @@
-const { Database, aql } = require('arangojs');
+const { Database } = require('arangojs');
 const db = new Database({
     url: "http://localhost:8529",
     databaseName: "ust_courses",

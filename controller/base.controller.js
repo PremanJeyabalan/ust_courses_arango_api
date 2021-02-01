@@ -53,11 +53,24 @@ function Base({collection, db}) {
         return cursor;
     };
 
+    const checkDocExists = async ({doc}) => {
+        const cursor = await db.query(aql`
+            FOR u IN ${col}
+            FILTER u._key == ${doc}
+            RETURN u
+        `)
+
+        const result = await cursor.next();
+
+        return (result ? result : false)
+    }
+
     return Object({
         insertIntoCollection,
         removeFromCollection,
         removeEdge,
         createEdge,
+        checkDocExists
     })
 }
 
