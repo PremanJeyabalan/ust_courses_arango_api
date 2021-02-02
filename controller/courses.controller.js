@@ -15,7 +15,7 @@ function Courses({ db }) {
         const cursor = await db.query(aql`
             FOR v, e, p IN 1..10 INBOUND ${id} prerequisiteOf
 
-            RETURN p
+            RETURN e
         `)
 
 

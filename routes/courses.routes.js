@@ -4,15 +4,7 @@ const db = require('../db/arangoConn');
 const { Courses } = require('../controller/courses.controller');
 const { parseApiResponse } = require('../utils/helpers');
 
-const isCourse = async (req, res, next) => {
-    const { course } = req.body;
-
-    const result = await Courses({db}).checkIfCourseExists({course, collection: 'courses'})
-
-    result ? next() : res.status(404).json({err: 'invalid course code', payload: result});
-}
-
-router.post('/prereqs', isCourse, async (req, res) => {
+router.post('/prereqs', async (req, res) => {
     const { course } = req.body;
 
     const result = await Courses({db}).findAllPrereqs({ course });
@@ -22,7 +14,7 @@ router.post('/prereqs', isCourse, async (req, res) => {
 
 })
 
-router.post('/exclusions', isCourse, async (req, res) => {
+router.post('/exclusions', async (req, res) => {
     const { course } = req.body;
 
     const result = await Courses({db}).findAllExclusions({ course });
@@ -30,7 +22,7 @@ router.post('/exclusions', isCourse, async (req, res) => {
     parseApiResponse(res, result);
 })
 
-router.post('/postreqs', isCourse, async(req, res) => {
+router.post('/postreqs', async(req, res) => {
     const {course} = req.body;
 
     const result = await Courses({db}).findAllPostreqs({ course });

@@ -3,9 +3,12 @@ require('dotenv').config()
 const db = require('./db/arangoConn');
 const {siteCrawler} = require('./scripts/puppeteer');
 const { Puppeteer } = require('./controller/puppeteer.controller');
+const { isCourse , logRequestStart } = require('./middlewares/middlewares');
 const courses = require('./routes/courses.routes');
 var bodyParser = require('body-parser');
-const app = express()
+
+const app = express();
+
 app.use(
     bodyParser.urlencoded({
       extended: true
@@ -14,7 +17,8 @@ app.use(
 
 app.use(bodyParser.json());
 
-app.use('/courses', courses)
+app.use(logRequestStart)
+app.use('/courses', isCourse, courses)
 
 app.listen(process.env.PORT,() => console.log(`Example app listening on port ${process.env.PORT}!`));
 
