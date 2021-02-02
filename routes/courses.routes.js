@@ -22,4 +22,20 @@ router.post('/prereqs', isCourse, async (req, res) => {
 
 })
 
+router.post('/exclusions', isCourse, async (req, res) => {
+    const { course } = req.body;
+
+    const result = await Courses({db}).findAllExclusions({ course });
+
+    parseApiResponse(res, result);
+})
+
+router.post('/postreqs', isCourse, async(req, res) => {
+    const {course} = req.body;
+
+    const result = await Courses({db}).findAllPostreqs({ course });
+
+    parseApiResponse(res, result)
+})
+
 module.exports = router;
